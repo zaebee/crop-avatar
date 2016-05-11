@@ -112,7 +112,17 @@
     </div>
 
     <div class="row">
-      {{#if imageData}}
+      {{#if errors.height}}
+        <div class="alert alert-danger" role="alert">{{errors.height}}</div>
+      {{/if}}
+      {{#if errors.width}}
+        <div class="alert alert-danger" role="alert">{{errors.width}}</div>
+      {{/if}}
+      {{#if errors.size}}
+      <div class="alert alert-danger" role="alert">{{errors.size}}</div>
+      {{/if}}
+
+      {{#if imageData }}
         <div class="col-md-8">
           <img src="{{imageData}}" class="cropAvatar">
         </div>

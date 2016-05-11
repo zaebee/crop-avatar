@@ -1,6 +1,10 @@
 window.app = (function(){
   
-  return {}
+  return {
+    MIN_HEIGHT: 186, // min image height - 186px
+    MIN_WIDTH: 186, // min image width - 186px
+    MAX_SIZE: 5 * 1024 * 1024 // 5mb
+  }
 
 })();
 
@@ -12,11 +16,30 @@ var app = app || {};
     el: '#avatarEdit',
     template: '#avatar-edit-template',
     data: {
+      errors: {},
       computerImageFiles: [],
       imageData: null,
       internetImageUrl: null,
     },
 
+    validate: function(size, height, width){
+      // TODO скрывать кроппер если валидация не пройдена
+      if (height < app.MIN_HEIGHT ) {
+        this.set('errors.height', 'Image height must be more ' + app.MIN_HEIGHT + 'px');
+      } else {
+        this.set('errors.height', null);
+      };
+      if (width < app.MIN_WIDTH ) {
+        this.set('errors.width', 'Image width must be more ' + app.MIN_WIDTH + 'px');
+      } else {
+        this.set('errors.width', null);
+      };
+      if (size > app.MIN_SIZE) {
+        this.set('errors.size', 'Image size must be less' + app.MIN_SIZE + 'bytes');
+      } else {
+        this.set('errors.size', null);
+      };
+    },
     /*
      Генерируем Base64 данные картинки из урла 
      и навешиваем кроппер.
@@ -28,13 +51,11 @@ var app = app || {};
           dataURL;
       img.crossOrigin = 'Anonymous';
       img.onload = function (e) {
-        console.log(e);
-        canvas.width = this.width;
-        canvas.height = this.height;
-        // TODO сделать валидацию
+        canvas.width = img.width;
+        canvas.height = img.height;
+        app.avatarEdit.validate(img.size, img.height, img.width);
 
         ctx.drawImage(this, 0, 0);
-        window.ctx = canvas;
         dataURL = canvas.toDataURL('image/png');
         app.avatarEdit.set('imageData', dataURL);
         app.avatarEdit.createCropper();
@@ -49,8 +70,7 @@ var app = app || {};
     getImageDataFromFile: function(file) {
       var reader = new FileReader();
       reader.onload = function(e) {
-        // TODO сделать валидацию
-
+        app.avatarEdit.validate(file.size, file.height, file.width);
         app.avatarEdit.set('imageData', reader.result);
         app.avatarEdit.createCropper();
       };
@@ -106,8 +126,10 @@ var app = app || {};
       var canvas = this.cropper.getCroppedCanvas(),
           dataURL = canvas.toDataURL("image/png");
       $('#mainAvatar').attr('src', dataURL);
+
+      // Save to server
       $.post('/save_avatar/', {data: dataURL}).done(function(res){
-        console.log(res);
+
       });
       $('#avatarModal').modal('hide');
     },
