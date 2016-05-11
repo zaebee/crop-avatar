@@ -111,6 +111,10 @@
       </form>
     </div>
 
+    {{#if loading}}
+    <p>Please, wait.... Image is loading...</p>
+    {{/if}}
+
     <div class="row">
       {{#if errors.height}}
         <div class="alert alert-danger" role="alert">{{errors.height}}</div>

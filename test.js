@@ -16,6 +16,7 @@ var app = app || {};
     el: '#avatarEdit',
     template: '#avatar-edit-template',
     data: {
+      loading: false,
       errors: {},
       computerImageFiles: [],
       imageData: null,
@@ -49,7 +50,11 @@ var app = app || {};
           canvas = document.createElement("canvas"),
           ctx = canvas.getContext("2d"),
           dataURL;
+
+      app.avatarEdit.set('loading', true);
       img.crossOrigin = 'Anonymous';
+      img.src = url;
+
       img.onload = function (e) {
         canvas.width = img.width;
         canvas.height = img.height;
@@ -59,20 +64,17 @@ var app = app || {};
         dataURL = canvas.toDataURL('image/png');
         app.avatarEdit.set('imageData', dataURL);
         app.avatarEdit.createCropper();
+        app.avatarEdit.set('loading', false);
       };
-      img.src = url;
     },
 
     /*
      Генерируем Base64 данные картинки из файла 
-     и навешиваем кроппер.
     */
     getImageDataFromFile: function(file) {
       var reader = new FileReader();
       reader.onload = function(e) {
-        app.avatarEdit.validate(file.size, file.height, file.width);
-        app.avatarEdit.set('imageData', reader.result);
-        app.avatarEdit.createCropper();
+        app.avatarEdit.getImageDataFromUrl(reader.result);
       };
       reader.readAsDataURL(file);
     },
@@ -103,8 +105,7 @@ var app = app || {};
 
       if (files.length > 0) {
         // get first image file
-        var file = files.item(0);
-        this.getImageDataFromFile(file);
+        this.getImageDataFromFile(files[0]);
       }
     },
 
