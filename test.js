@@ -23,6 +23,12 @@ var app = app || {};
       internetImageUrl: null,
     },
 
+    computed: {
+      isValid: function(){
+        return !this.get('errors.height') && !this.get('errors.width') && !this.get('errors.size');
+      },
+    },
+
     validate: function(size, height, width){
       // TODO скрывать кроппер если валидация не пройдена
       if (height < app.MIN_HEIGHT ) {
