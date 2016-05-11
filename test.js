@@ -30,23 +30,24 @@ var app = app || {};
     },
 
     validate: function(size, height, width){
-      // TODO скрывать кроппер если валидация не пройдена
+      console.log(size, height, width);
       if (height < app.MIN_HEIGHT ) {
-        this.set('errors.height', 'Image height must be more ' + app.MIN_HEIGHT + 'px');
+        this.set('errors.height', 'Image height should be more then ' + app.MIN_HEIGHT + 'px');
       } else {
         this.set('errors.height', null);
       };
       if (width < app.MIN_WIDTH ) {
-        this.set('errors.width', 'Image width must be more ' + app.MIN_WIDTH + 'px');
+        this.set('errors.width', 'Image width should be more then ' + app.MIN_WIDTH + 'px');
       } else {
         this.set('errors.width', null);
       };
       if (size > app.MIN_SIZE) {
-        this.set('errors.size', 'Image size must be less' + app.MIN_SIZE + 'bytes');
+        this.set('errors.size', 'Image size should be less then ' + app.MIN_SIZE + 'bytes');
       } else {
         this.set('errors.size', null);
       };
     },
+
     /*
      Генерируем Base64 данные картинки из урла 
      и навешиваем кроппер.
@@ -54,7 +55,6 @@ var app = app || {};
     getImageDataFromUrl: function(url) {
       var img = new Image(),
           canvas = document.createElement("canvas"),
-          ctx = canvas.getContext("2d"),
           dataURL;
 
       app.avatarEdit.set('loading', true);
@@ -64,13 +64,16 @@ var app = app || {};
       img.onload = function (e) {
         canvas.width = img.width;
         canvas.height = img.height;
-        app.avatarEdit.validate(img.size, img.height, img.width);
 
-        ctx.drawImage(this, 0, 0);
+        canvas.getContext('2d').drawImage(this, 0, 0);
         dataURL = canvas.toDataURL('image/png');
+
+        app.avatarEdit.validate(dataURL.length, img.height, img.width);
         app.avatarEdit.set('imageData', dataURL);
-        app.avatarEdit.createCropper();
         app.avatarEdit.set('loading', false);
+        app.avatarEdit.createCropper();
+        canvas = null;
+        img = null;
       };
     },
 
@@ -79,7 +82,7 @@ var app = app || {};
     */
     getImageDataFromFile: function(file) {
       var reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onloadend = function(e) {
         app.avatarEdit.getImageDataFromUrl(reader.result);
       };
       reader.readAsDataURL(file);
